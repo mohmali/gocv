@@ -42,20 +42,20 @@ endif
 deps: $(distro_deps)
 
 deps_rh_centos:
-	sudo yum -y install pkgconfig $(RPMS)
+	yum -y install pkgconfig $(RPMS)
 
 deps_fedora:
-	sudo dnf -y install pkgconf-pkg-config $(RPMS)
+	dnf -y install pkgconf-pkg-config $(RPMS)
 
 deps_debian:
-	sudo apt-get -y update
-	sudo apt-get -y install $(DEBS)
+	apt-get -y update
+	apt-get -y install $(DEBS)
 
 deps_jetson:
-	sudo sh -c "echo '/usr/local/cuda/lib64' >> /etc/ld.so.conf.d/nvidia-tegra.conf"
-	sudo ldconfig
-	sudo apt-get -y update
-	sudo apt-get -y install $(JETSON)
+	sh -c "echo '/usr/local/cuda/lib64' >> /etc/ld.so.conf.d/nvidia-tegra.conf"
+	ldconfig
+	apt-get -y update
+	apt-get -y install $(JETSON)
 
 # Download OpenCV source tarballs.
 download:
@@ -71,25 +71,25 @@ download:
 
 # Download openvino source tarballs.
 download_openvino:
-	sudo rm -rf /usr/local/dldt/
-	sudo rm -rf /usr/local/openvino/
-	sudo git clone https://github.com/openvinotoolkit/openvino -b 2019_R3.1 /usr/local/openvino/
+	rm -rf /usr/local/dldt/
+	rm -rf /usr/local/openvino/
+	git clone https://github.com/openvinotoolkit/openvino -b 2019_R3.1 /usr/local/openvino/
 
 # Build openvino.
 build_openvino_package:
 	cd /usr/local/openvino/inference-engine
-	sudo git submodule init
-	sudo git submodule update --recursive
-	sudo ./install_dependencies.sh
-	sudo mv -f thirdparty/clDNN/common/intel_ocl_icd/6.3/linux/Release thirdparty/clDNN/common/intel_ocl_icd/6.3/linux/RELEASE
-	sudo mkdir build
+	git submodule init
+	git submodule update --recursive
+	./install_dependencies.sh
+	mv -f thirdparty/clDNN/common/intel_ocl_icd/6.3/linux/Release thirdparty/clDNN/common/intel_ocl_icd/6.3/linux/RELEASE
+	mkdir build
 	cd build
-	sudo rm -rf *
-	sudo cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -D ENABLE_VPU=ON -D ENABLE_MKL_DNN=ON -D ENABLE_CLDNN=ON ..
-	sudo $(MAKE) -j $(shell nproc --all)
-	sudo touch VERSION
-	sudo mkdir -p src/ngraph
-	sudo cp thirdparty/ngraph/src/ngraph/version.hpp src/ngraph
+	rm -rf *
+	cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -D ENABLE_VPU=ON -D ENABLE_MKL_DNN=ON -D ENABLE_CLDNN=ON ..
+	$(MAKE) -j $(shell nproc --all)
+	touch VERSION
+	mkdir -p src/ngraph
+	cp thirdparty/ngraph/src/ngraph/version.hpp src/ngraph
 	cd -
 
 # Build OpenCV.
@@ -226,10 +226,10 @@ clean:
 
 # Cleanup old library files.
 sudo_pre_install_clean:
-	sudo rm -rf /usr/local/lib/cmake/opencv4/
-	sudo rm -rf /usr/local/lib/libopencv*
-	sudo rm -rf /usr/local/lib/pkgconfig/opencv*
-	sudo rm -rf /usr/local/include/opencv*
+	rm -rf /usr/local/lib/cmake/opencv4/
+	rm -rf /usr/local/lib/libopencv*
+	rm -rf /usr/local/lib/pkgconfig/opencv*
+	rm -rf /usr/local/include/opencv*
 
 # Do everything.
 install: deps download sudo_pre_install_clean build sudo_install clean verify
@@ -261,15 +261,15 @@ install_all: deps download download_openvino sudo_pre_install_clean build_openvi
 # Install system wide.
 sudo_install:
 	cd $(TMP_DIR)opencv/opencv-$(OPENCV_VERSION)/build
-	sudo $(MAKE) install
-	sudo ldconfig
+	$(MAKE) install
+	ldconfig
 	cd -
 
 # Install system wide.
 sudo_install_openvino:
 	cd /usr/local/openvino/inference-engine/build
-	sudo $(MAKE) install
-	sudo ldconfig
+	$(MAKE) install
+	ldconfig
 	cd -
 
 # Build a minimal Go app to confirm gocv works.
